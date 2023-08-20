@@ -29,12 +29,44 @@ function generateCalendar(contributionData) {
   const dayOfWeekColumn = document.createElement("div")
   dayOfWeekColumn.classList.add("day-of-week-column")
 
+  const monthNames = [
+    "Апр.",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Авг.",
+    "Сен.",
+    "Окт.",
+    "Ноя.",
+    "Дек.",
+    "Янв.",
+    "Фев.",
+    "Март",
+  ]
+
+  // Создаем столбец с названиями месяцев
+  const monthColumn = document.createElement("div")
+  monthColumn.classList.add("month-column")
+
+  for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+    const monthName = monthNames[monthIndex]
+
+    const monthLabel = document.createElement("div")
+    monthLabel.classList.add("month-label")
+    monthLabel.textContent = monthName
+
+    monthColumn.appendChild(monthLabel)
+  }
+
+  calendarContainer.appendChild(monthColumn)
+
   const daysOfWeek = ["Пн", "", "Ср", "", "Пт", "", ""]
+
   for (const dayOfWeek of daysOfWeek) {
-    const dayOfWeekCell = document.createElement("div")
-    dayOfWeekCell.classList.add("day-of-week-cell")
-    dayOfWeekCell.textContent = dayOfWeek
-    dayOfWeekColumn.appendChild(dayOfWeekCell)
+    const dayOfWeekNameCell = document.createElement("div")
+    dayOfWeekNameCell.classList.add("day-of-week-cell")
+    dayOfWeekNameCell.textContent = dayOfWeek
+    dayOfWeekColumn.appendChild(dayOfWeekNameCell)
   }
 
   calendarContainer.appendChild(dayOfWeekColumn)
@@ -47,6 +79,18 @@ function generateCalendar(contributionData) {
       const square = document.createElement("div")
       square.classList.add("calendar-square")
 
+      square.addEventListener("mouseenter", () => {
+        const tooltip = createTooltip(contributions, currentDateCopy)
+        square.appendChild(tooltip)
+      })
+
+      square.addEventListener("mouseleave", () => {
+        const tooltip = square.querySelector(".tooltip")
+        if (tooltip) {
+          tooltip.remove()
+        }
+      })
+
       const currentDateCopy = new Date(currentDate)
       currentDateCopy.setDate(
         currentDateCopy.getDate() - (356 - (week * 7 + dayOfWeek))
@@ -54,9 +98,9 @@ function generateCalendar(contributionData) {
       const dateKey = formatDate(currentDateCopy)
       const contributions = contributionData[dateKey] || 0
       const level = calculateLevel(contributions)
-      const month = currentDateCopy.getMonth()
-      const dayOfMonth = currentDateCopy.getDate() // Получаем день месяца
-      square.textContent = dayOfMonth + "," + month
+      // const month = currentDateCopy.getMonth()
+      // const dayOfMonth = currentDateCopy.getDate() // Получаем день месяца
+      // square.textContent = dayOfMonth + "," + month
 
       if (dayOfWeek === 0) {
         // Если это первый день недели, добавляем класс для первой ячейки строки
@@ -96,4 +140,36 @@ function calculateLevel(contributions) {
   } else {
     return 0
   }
+}
+
+// tooltip
+function createTooltip(contributions, date) {
+  const tooltip = document.createElement("div")
+  tooltip.classList.add("tooltip")
+
+  const tooltipContent = document.createElement("div")
+  tooltipContent.classList.add("tooltip-content")
+
+  const contributionsInfo = document.createElement("div")
+  contributionsInfo.textContent = `Contributions: ${contributions}`
+  tooltipContent.appendChild(contributionsInfo)
+
+  const dateInfo = document.createElement("div")
+  const formattedDate = formatDateFull(date)
+  dateInfo.textContent = formattedDate
+  tooltipContent.appendChild(dateInfo)
+
+  tooltip.appendChild(tooltipContent)
+
+  return tooltip
+}
+
+function formatDateFull(date) {
+  const options = {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }
+  return date.toLocaleDateString("en-US", options)
 }
