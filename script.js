@@ -1,7 +1,6 @@
-// script.js
 let url = `https://dpg.gg/test/calendar.json`
 
-// get data
+// получение данных о contributions
 const getData = async function (url) {
   const result = await fetch(url)
   if (!result.ok) {
@@ -19,7 +18,7 @@ getData(url)
     console.error("Ошибка при получении данных:", error)
   })
 
-// calendar render
+// рэндерим календарь
 const calendarContainer = document.getElementById("calendarContainer")
 
 function generateCalendar(contributionData) {
@@ -30,6 +29,9 @@ function generateCalendar(contributionData) {
   dayOfWeekColumn.classList.add("day-of-week-column")
 
   const monthNames = [
+    "Янв.",
+    "Фев.",
+    "Март",
     "Апр.",
     "Май",
     "Июнь",
@@ -39,17 +41,40 @@ function generateCalendar(contributionData) {
     "Окт.",
     "Ноя.",
     "Дек.",
-    "Янв.",
-    "Фев.",
-    "Март",
   ]
+
+  const daysOfWeek = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"]
+
+  const firstSquare = document.createElement("div")
+  firstSquare.classList.add("calendar-square")
 
   // Создаем столбец с названиями месяцев
   const monthColumn = document.createElement("div")
   monthColumn.classList.add("month-column")
 
+  // Получаем день недели и месяц самой первой ячейки
+  const firstDateCopy = new Date(currentDate)
+  firstDateCopy.setDate(firstDateCopy.getDate() - 356)
+  const firstDayOfWeek = firstDateCopy.getDay()
+  const firstMonth = firstDateCopy.getMonth()
+
+  console.log("Первый день недели:", firstDayOfWeek)
+  console.log("Первый месяц:", firstMonth)
+
+  // Переупорядочиваем месяцы в новом массиве в нужном порядке
+  const reorderedMonthNames = [
+    ...monthNames.slice(firstMonth),
+    ...monthNames.slice(0, firstMonth),
+  ]
+
+  // Переупорядочиваем дни недели в новом массиве в нужном порядке
+  const reorderedDaysOfWeek = [
+    ...daysOfWeek.slice(firstDayOfWeek),
+    ...daysOfWeek.slice(0, firstDayOfWeek),
+  ]
+
   for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
-    const monthName = monthNames[monthIndex]
+    const monthName = reorderedMonthNames[monthIndex]
 
     const monthLabel = document.createElement("div")
     monthLabel.classList.add("month-label")
@@ -60,9 +85,7 @@ function generateCalendar(contributionData) {
 
   calendarContainer.appendChild(monthColumn)
 
-  const daysOfWeek = ["Пн", "", "Ср", "", "Пт", "", ""]
-
-  for (const dayOfWeek of daysOfWeek) {
+  for (const dayOfWeek of reorderedDaysOfWeek) {
     const dayOfWeekNameCell = document.createElement("div")
     dayOfWeekNameCell.classList.add("day-of-week-cell")
     dayOfWeekNameCell.textContent = dayOfWeek
@@ -95,6 +118,7 @@ function generateCalendar(contributionData) {
       currentDateCopy.setDate(
         currentDateCopy.getDate() - (356 - (week * 7 + dayOfWeek))
       )
+
       const dateKey = formatDate(currentDateCopy)
       const contributions = contributionData[dateKey] || 0
       const level = calculateLevel(contributions)
